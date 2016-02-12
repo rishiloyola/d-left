@@ -2,6 +2,8 @@
 #include <stdint.h>
 
 const int bucketHeight = 10;    // ### need to change this
+const int subTableSize = 20;
+const int tableSize = 5;
 
 struct fingerprint
 {
@@ -16,10 +18,16 @@ struct bucket
 
 struct subTable
 {
-	/* bucket array*/
+	struct bucket buckets[subTableSize];   /* bucket array*/
 };
 
 struct Table
 {
-	/* subtables array, bucket count, subtables count */
+	struct subTable subtables[tableSize];      /* subtables array, bucket count, subtables count */
 };
+
+
+void New(){
+	// This is the function to initialize the variables.
+	// it will return the pointer to the table
+}

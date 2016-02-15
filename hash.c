@@ -1,33 +1,47 @@
 #include <stdio.h>
 #include <stdint.h>
+#include "murmur3.h"
 
-const int bucketHeight = 10;    // ### need to change this
-const int subTableSize = 20;
-const int tableSize = 5;
 
-struct fingerprint
-{
-	uint32_t key;               // 32 bit key
-};
+const int BUCKET_HEIGHT = 2;    // ### need to change this
+const int SUBTABLE_SIZE = 5;
+const int TABLE_SIZE = 13;
+const uint32_t SEED = 42;
 
-struct bucket
+
+struct Bucket
 {
 	int counter;                // keep count of filled cells
-	struct fingerprint cells[bucketHeight];      // cells per bucket
+	uint32_t fingerprint[BUCKET_HEIGHT];
 };
 
-struct subTable
+struct SubTable
 {
-	struct bucket buckets[subTableSize];   /* bucket array*/
+	struct bucket buckets[SUBTABLE_SIZE];   /* bucket array*/
 };
 
 struct Table
 {
-	struct subTable subtables[tableSize];      /* subtables array, bucket count, subtables count */
+	struct SubTable subtables[TABLE_SIZE];      /* subtables array, bucket count, subtables count */
 };
 
 
-void New(){
-	// This is the function to initialize the variables.
-	// it will return the pointer to the table
+*Table New() {
+	struct Table T1;   // it will return the pointer to the table
+	return &T1;
+}
+
+//Get the index number by hash and get the bucket from that subtables.
+Bucket* getTargets(uint32_t key, *Table td) {
+	struct Bucket *bucketRef[TABLE_SIZE];
+	uint32_t out;
+	for (int i = 0; i < sizeof(td.SubTable) / sizeof(td.SubTable[0]); i++) {
+		MurmurHash3_x86_32(key, SEED, out);					//calculate the hash value for each subtables,
+		bucketRef[i] = &(td.subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
+	}
+	return bucketRef;
+}
+
+void Add() {
+
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "murmur3.h"
+#include <stdbool.h>
 
 
 const int BUCKET_HEIGHT = 2;    // ### need to change this
@@ -11,13 +12,13 @@ const uint32_t SEED = 42;
 
 struct Bucket
 {
-	int counter = 0;                // keep count of filled cells
+	int counter;                // keep count of filled cells
 	uint32_t fingerprint[BUCKET_HEIGHT];
 };
 
 struct SubTable
 {
-	struct bucket buckets[SUBTABLE_SIZE];   /* bucket array*/
+	struct Bucket buckets[SUBTABLE_SIZE];   /* bucket array*/
 };
 
 struct Table
@@ -26,17 +27,17 @@ struct Table
 };
 
 
-*Table New() {
-	struct Table T1;   // it will return the pointer to the table
-	return &T1;
-}
+// struct Table *New() {
+// 	struct Table T1;   // it will return the pointer to the table
+// 	return &T1;
+// }
 
 //Get the index number by hash and get the bucket from that subtables.
-Bucket* getTargets(*uint32_t key, *Table td) {
-	struct Bucket *bucketRef[TABLE_SIZE];
+struct Bucket * getTargets(uint32_t key, struct Table *td) {
+	static struct Bucket *bucketRef[TABLE_SIZE];
 	uint32_t out;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		MurmurHash3_x86_32(*key, SEED, out);					//calculate the hash value for each subtables,
+		MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
 		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
 			bucketRef[i] = NULL;
 			continue;
@@ -46,8 +47,21 @@ Bucket* getTargets(*uint32_t key, *Table td) {
 	return bucketRef;
 }
 
-bool inserting(*uint32_t key, *Table td) {
-	struct Bucket *bucketList[TABLE_SIZE] = getTargets(key, td);
+
+//Check if no room in any bucket   ####check the getting array
+void checkEmptyArray(struct Bucket *bucketList) {
+	bool emptyArr = false;
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		if (bucketList[i] != NULL) {
+			emptyArr = true;
+			break;
+		}
+	}
+	return emptyArr;
+}
+
+bool inserting(uint32_t key, struct Table *td) {
+	struct Bucket *bucketList = getTargets(key, td);
 	bool emptyArr = checkEmptyArray(bucketList);
 	if (emptyArr) {
 		int minCount = BUCKET_HEIGHT, index = 0;
@@ -59,23 +73,11 @@ bool inserting(*uint32_t key, *Table td) {
 				}
 			}
 		}
-		bucketList[index]->fingerprint[minCount] = *key;
-		bucketList[i]->counter = bucketList[i]->counter + 1;
+		bucketList[index]->fingerprint[minCount] = key;
+		bucketList[index]->counter = bucketList[index]->counter + 1;
 	} else {
-		fmt.printf("[Error]:Key already exists\n");
+		printf("[Error]:Key already exists\n");
 		return false;
 	}
 	return true;
-}
-
-//Check if no room in any bucket
-void checkEmptyArray(*Bucket bucketList) {
-	bool emptyArr = false;
-	for (int i = 0; i < TABLE_SIZE; i++) {
-		if (bucketList[i] != NULL) {
-			emptyArr = true;
-			break;
-		}
-	}
-	return emptyArr
 }

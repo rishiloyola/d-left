@@ -46,9 +46,9 @@ Bucket* getTargets(*uint32_t key, *Table td) {
 	return bucketRef;
 }
 
-bool Add(*uint32_t key, *Table td) {
+bool inserting(*uint32_t key, *Table td) {
 	struct Bucket *bucketList[TABLE_SIZE] = getTargets(key, td);
-	bool emptyArr = lookup(bucketList);
+	bool emptyArr = checkEmptyArray(bucketList);
 	if (emptyArr) {
 		int minCount = BUCKET_HEIGHT, index = 0;
 		for (int i = 0; i < TABLE_SIZE; i++) {
@@ -68,7 +68,8 @@ bool Add(*uint32_t key, *Table td) {
 	return true;
 }
 
-void lookup(*Bucket bucketList) {
+//Check if no room in any bucket
+void checkEmptyArray(*Bucket bucketList) {
 	bool emptyArr = false;
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		if (bucketList[i] != NULL) {

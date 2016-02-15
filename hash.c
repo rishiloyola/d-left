@@ -11,7 +11,7 @@ const uint32_t SEED = 42;
 
 struct Bucket
 {
-	int counter;                // keep count of filled cells
+	int counter = 0;                // keep count of filled cells
 	uint32_t fingerprint[BUCKET_HEIGHT];
 };
 
@@ -32,16 +32,49 @@ struct Table
 }
 
 //Get the index number by hash and get the bucket from that subtables.
-Bucket* getTargets(uint32_t key, *Table td) {
+Bucket* getTargets(*uint32_t key, *Table td) {
 	struct Bucket *bucketRef[TABLE_SIZE];
 	uint32_t out;
-	for (int i = 0; i < sizeof(td.SubTable) / sizeof(td.SubTable[0]); i++) {
-		MurmurHash3_x86_32(key, SEED, out);					//calculate the hash value for each subtables,
-		bucketRef[i] = &(td.subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		MurmurHash3_x86_32(*key, SEED, out);					//calculate the hash value for each subtables,
+		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
+			bucketRef[i] = NULL;
+			continue;
+		}
+		bucketRef[i] = &(td->subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
 	}
 	return bucketRef;
 }
 
-void Add() {
+bool Add(*uint32_t key, *Table td) {
+	struct Bucket *bucketList[TABLE_SIZE] = getTargets(key, td);
+	bool emptyArr = lookup(bucketList);
+	if (emptyArr) {
+		int minCount = BUCKET_HEIGHT, index = 0;
+		for (int i = 0; i < TABLE_SIZE; i++) {
+			if (bucketList[i] != NULL) {
+				if (minCount > bucketList[i]->counter) {
+					minCount = bucketList[i]->counter;
+					index = i;
+				}
+			}
+		}
+		bucketList[index]->fingerprint[minCount] = *key;
+		bucketList[i]->counter = bucketList[i]->counter + 1;
+	} else {
+		fmt.printf("[Error]:Key already exists\n");
+		return false;
+	}
+	return true;
+}
 
+void lookup(*Bucket bucketList) {
+	bool emptyArr = false;
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		if (bucketList[i] != NULL) {
+			emptyArr = true;
+			break;
+		}
+	}
+	return emptyArr
 }

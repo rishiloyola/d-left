@@ -33,26 +33,38 @@ struct Table
 // }
 
 //Get the index number by hash and get the bucket from that subtables.
-struct Bucket * getTargets(uint32_t key, struct Table *td) {
-	static struct Bucket *bucketRef[TABLE_SIZE];
+// struct Bucket * getTargets(uint32_t key, struct Table *td) {
+// 	static struct Bucket *bucketRef[TABLE_SIZE];
+// 	uint32_t out;
+// 	for (int i = 0; i < TABLE_SIZE; i++) {
+// 		MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
+// 		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
+// 			bucketRef[i] = NULL;
+// 			continue;
+// 		}
+// 		bucketRef[i] = &(td->subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
+// 	}
+// 	return bucketRef;
+// }
+int * getTargets(uint32_t key, struct Table *td) {
+	static int bucketID[TABLE_SIZE];
 	uint32_t out;
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
 		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
-			bucketRef[i] = NULL;
+			bucketID[i] = -1;
 			continue;
 		}
-		bucketRef[i] = &(td->subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
+		bucketID[i] = out % SUBTABLE_SIZE;   		// Then divide hash value by subtable size
 	}
-	return bucketRef;
+	return bucketID;
 }
 
-
 //Check if no room in any bucket   ####check the getting array
-void checkEmptyArray(struct Bucket *bucketList) {
+bool checkEmptyArray(int *bucketList) {
 	bool emptyArr = false;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		if (bucketList[i] != NULL) {
+		if (bucketList[i] != -1) {
 			emptyArr = true;
 			break;
 		}
@@ -61,20 +73,20 @@ void checkEmptyArray(struct Bucket *bucketList) {
 }
 
 bool inserting(uint32_t key, struct Table *td) {
-	struct Bucket *bucketList = getTargets(key, td);
+	int *bucketList = getTargets(key, td);
 	bool emptyArr = checkEmptyArray(bucketList);
 	if (emptyArr) {
 		int minCount = BUCKET_HEIGHT, index = 0;
 		for (int i = 0; i < TABLE_SIZE; i++) {
-			if (bucketList[i] != NULL) {
-				if (minCount > bucketList[i]->counter) {
-					minCount = bucketList[i]->counter;
+			if (bucketList[i] != -1) {
+				if (minCount > td->subtables[i].buckets[bucketList[i]].counter) {
+					minCount = td->subtables[i].buckets[bucketList[i]].counter;
 					index = i;
 				}
 			}
 		}
-		bucketList[index]->fingerprint[minCount] = key;
-		bucketList[index]->counter = bucketList[index]->counter + 1;
+		td->subtables[index].buckets[bucketList[index]].fingerprint[minCount] = key;
+		td->subtables[index].buckets[bucketList[index]].counter += 1;
 	} else {
 		printf("[Error]:Key already exists\n");
 		return false;

@@ -104,8 +104,18 @@ bool lookup(uint32_t key, struct Table *td) {
 			}
 		}
 	} else {
-		printf("[Error]:Key already exists\n");
+		printf("[Error]: Key does not exists\n");
 		return false;
 	}
 	return false;
+}
+
+int main(int argc, char const *argv[])
+{
+	struct Table T1;
+	uint32_t key = 50;
+	bool output = inserting(key, &T1);
+	output = lookup(key, &T1);
+	printf("%d\n", output);
+	return 0;
 }

@@ -12,7 +12,7 @@ const uint32_t SEED = 42;
 
 struct Bucket
 {
-	int counter;                // keep count of filled cells
+	int counter;              // keep count of filled cells
 	uint32_t fingerprint[BUCKET_HEIGHT];
 };
 
@@ -27,35 +27,17 @@ struct Table
 };
 
 
-// struct Table *New() {
-// 	struct Table T1;   // it will return the pointer to the table
-// 	return &T1;
-// }
-
-//Get the index number by hash and get the bucket from that subtables.
-// struct Bucket * getTargets(uint32_t key, struct Table *td) {
-// 	static struct Bucket *bucketRef[TABLE_SIZE];
-// 	uint32_t out;
-// 	for (int i = 0; i < TABLE_SIZE; i++) {
-// 		MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
-// 		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
-// 			bucketRef[i] = NULL;
-// 			continue;
-// 		}
-// 		bucketRef[i] = &(td->subtables[i].buckets[out % SUBTABLE_SIZE]);   		// Then divide hash value by subtable size
-// 	}
-// 	return bucketRef;
-// }
 int * getTargets(uint32_t key, struct Table *td) {
 	static int bucketID[TABLE_SIZE];
 	uint32_t out;
+	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
+	int position = out % SUBTABLE_SIZE;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
 		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
 			bucketID[i] = -1;
 			continue;
 		}
-		bucketID[i] = out % SUBTABLE_SIZE;   		// Then divide hash value by subtable size
+		bucketID[i] = position;   		// Then divide hash value by subtable size
 	}
 	return bucketID;
 }
@@ -92,4 +74,38 @@ bool inserting(uint32_t key, struct Table *td) {
 		return false;
 	}
 	return true;
+}
+
+int * getBuckets(uint32_t key, struct Table *td) {
+	static int bucketID[TABLE_SIZE];
+	uint32_t out;
+	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == 0) {
+			bucketID[i] = -1;
+			continue;
+		}
+		bucketID[i] = out % SUBTABLE_SIZE;   		// Then divide hash value by subtable size
+	}
+	return bucketID;
+}
+
+bool lookup(uint32_t key, struct Table *td) {
+	int *bucketList = getBuckets(key, td);
+	bool emptyArr = checkEmptyArray(bucketList);
+	if (emptyArr) {
+		for (int i = 0; i < TABLE_SIZE; i++) {
+			if (bucketList[i] != -1) {
+				for (int j = 0; j < BUCKET_HEIGHT; j++) {
+					if (td->subtables[i].buckets[bucketList[i]].fingerprint[j] == key) {
+						return true;
+					}
+				}
+			}
+		}
+	} else {
+		printf("[Error]:Key already exists\n");
+		return false;
+	}
+	return false;
 }

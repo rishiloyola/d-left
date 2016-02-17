@@ -110,8 +110,49 @@ bool lookup(uint32_t key, struct Table *td) {
 	return false;
 }
 
-int main(int argc, char const *argv[])
-{
+bool remove(uint32_t key, struct Table *td) {
+	int *bucketList = getBuckets(key, td);
+	bool emptyArr = checkEmptyArray(bucketList);
+	bool deleted = false;
+	if (emptyArr) {
+		int bucketIndex, cellIndex;
+		for (int i = 0; i < TABLE_SIZE; i++) {
+			if (bucketList[i] != -1) {
+				for (int j = 0; j < BUCKET_HEIGHT; j++) {
+					if (td->subtables[i].buckets[bucketList[i]].fingerprint[j] == key) {
+						bucketIndex = i;
+						cellIndex = j;
+						deleted = true;
+						break;
+					}
+				}
+			}
+		}
+		if (deleted) {
+			for (int i = cellIndex; i < BUCKET_HEIGHT; i++) {
+				if (i != BUCKET_HEIGHT - 1)
+					td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i + 1];
+				else
+					td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = NULL;
+			}
+			td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].counter -= 1;
+			printf("The key - %d is deleted successfully\n ", key);
+			return true;
+		} else {
+			printf("[Error]: Key does not exists\n");
+			return false;
+		}
+	} else {
+		printf("[Error]: Key does not exists\n");
+		return false;
+	}
+	return false;
+}
+
+//look at the deleting the variables
+//look at the initial value of the counter.
+
+int main(int argc, char const *argv[]) {
 	struct Table T1;
 	uint32_t key = 50;
 	bool output = inserting(key, &T1);

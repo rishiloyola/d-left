@@ -27,7 +27,8 @@ struct Table
 };
 
 
-int * getTargets(uint32_t key, struct Table *td) {
+int * getTargets(uint32_t key, struct Table *td)
+{
 	static int bucketID[TABLE_SIZE];
 	uint32_t out;
 	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
@@ -43,7 +44,8 @@ int * getTargets(uint32_t key, struct Table *td) {
 }
 
 //Check if no room in any bucket   ####check the getting array
-bool checkEmptyArray(int *bucketList) {
+bool checkEmptyArray(int *bucketList)
+{
 	bool emptyArr = false;
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		if (bucketList[i] != -1) {
@@ -54,7 +56,8 @@ bool checkEmptyArray(int *bucketList) {
 	return emptyArr;
 }
 
-bool inserting(uint32_t key, struct Table *td) {
+bool inserting(uint32_t key, struct Table *td)
+{
 	int *bucketList = getTargets(key, td);
 	bool emptyArr = checkEmptyArray(bucketList);
 	if (emptyArr) {
@@ -76,7 +79,8 @@ bool inserting(uint32_t key, struct Table *td) {
 	return true;
 }
 
-int * getBuckets(uint32_t key, struct Table *td) {
+int * getBuckets(uint32_t key, struct Table *td)
+{
 	static int bucketID[TABLE_SIZE];
 	uint32_t out;
 	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
@@ -90,7 +94,8 @@ int * getBuckets(uint32_t key, struct Table *td) {
 	return bucketID;
 }
 
-bool lookup(uint32_t key, struct Table *td) {
+bool lookup(uint32_t key, struct Table *td)
+{
 	int *bucketList = getBuckets(key, td);
 	bool emptyArr = checkEmptyArray(bucketList);
 	if (emptyArr) {
@@ -110,7 +115,8 @@ bool lookup(uint32_t key, struct Table *td) {
 	return false;
 }
 
-bool remove(uint32_t key, struct Table *td) {
+bool delete(uint32_t key, struct Table *td)
+{
 	int *bucketList = getBuckets(key, td);
 	bool emptyArr = checkEmptyArray(bucketList);
 	bool deleted = false;
@@ -130,10 +136,7 @@ bool remove(uint32_t key, struct Table *td) {
 		}
 		if (deleted) {
 			for (int i = cellIndex; i < BUCKET_HEIGHT; i++) {
-				if (i != BUCKET_HEIGHT - 1)
-					td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i + 1];
-				else
-					td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = NULL;
+				td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i + 1];
 			}
 			td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].counter -= 1;
 			printf("The key - %d is deleted successfully\n ", key);
@@ -149,10 +152,10 @@ bool remove(uint32_t key, struct Table *td) {
 	return false;
 }
 
-//look at the deleting the variables
 //look at the initial value of the counter.
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const *argv[])
+{
 	struct Table T1;
 	uint32_t key = 50;
 	bool output = inserting(key, &T1);

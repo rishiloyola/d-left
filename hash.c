@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "murmur3.h"
 #include <stdbool.h>
+#include "murmur3.h"
 
 
 const int BUCKET_HEIGHT = 2;    // ### need to change this
@@ -16,10 +16,12 @@ struct Bucket
 	uint32_t fingerprint[BUCKET_HEIGHT];
 };
 
+
 struct SubTable
 {
 	struct Bucket buckets[SUBTABLE_SIZE];   /* bucket array*/
 };
+
 
 struct Table
 {
@@ -43,7 +45,8 @@ int * getTargets(uint32_t key, struct Table *td)
 	return bucketID;
 }
 
-//Check if no room in any bucket   ####check the getting array
+
+//Check if no room in any bucket   
 bool checkEmptyArray(int *bucketList)
 {
 	bool emptyArr = false;
@@ -55,6 +58,7 @@ bool checkEmptyArray(int *bucketList)
 	}
 	return emptyArr;
 }
+
 
 bool inserting(uint32_t key, struct Table *td)
 {
@@ -79,6 +83,7 @@ bool inserting(uint32_t key, struct Table *td)
 	return true;
 }
 
+
 int * getBuckets(uint32_t key, struct Table *td)
 {
 	static int bucketID[TABLE_SIZE];
@@ -93,6 +98,7 @@ int * getBuckets(uint32_t key, struct Table *td)
 	}
 	return bucketID;
 }
+
 
 bool lookup(uint32_t key, struct Table *td)
 {
@@ -114,6 +120,7 @@ bool lookup(uint32_t key, struct Table *td)
 	}
 	return false;
 }
+
 
 bool delete(uint32_t key, struct Table *td)
 {
@@ -152,7 +159,6 @@ bool delete(uint32_t key, struct Table *td)
 	return false;
 }
 
-//look at the initial value of the counter.
 
 int main(int argc, char const *argv[])
 {
@@ -160,6 +166,7 @@ int main(int argc, char const *argv[])
 	uint32_t key = 50;
 	bool output = inserting(key, &T1);
 	output = lookup(key, &T1);
+	output = delete(key, &T1);
 	printf("%d\n", output);
 	return 0;
 }

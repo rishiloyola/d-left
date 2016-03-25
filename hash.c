@@ -36,17 +36,17 @@ int * getTargets(uint32_t key, struct Table *td)
 	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
 	int position = out % SUBTABLE_SIZE;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == BUCKET_HEIGHT) {
+		if (td->subtables[i].buckets[position].counter == BUCKET_HEIGHT) {
 			bucketID[i] = -1;
-			continue;
+		} else {
+			bucketID[i] = position;   		// Then divide hash value by subtable size
 		}
-		bucketID[i] = position;   		// Then divide hash value by subtable size
 	}
 	return bucketID;
 }
 
 
-//Check if no room in any bucket   
+//Check if no room in any bucket
 bool checkEmptyArray(int *bucketList)
 {
 	bool emptyArr = false;
@@ -74,8 +74,13 @@ bool inserting(uint32_t key, struct Table *td)
 				}
 			}
 		}
-		td->subtables[index].buckets[bucketList[index]].fingerprint[minCount] = key;
-		td->subtables[index].buckets[bucketList[index]].counter += 1;
+		if (minCount != BUCKET_HEIGHT) {
+			td->subtables[index].buckets[bucketList[index]].fingerprint[minCount] = key;
+			td->subtables[index].buckets[bucketList[index]].counter += 1;
+			printf("Key is inserted successfully - %d\n", key);
+		} else {
+			printf("[Error]:Key cannot inserted\n");
+		}
 	} else {
 		printf("[Error]:Key already exists\n");
 		return false;
@@ -89,12 +94,13 @@ int * getBuckets(uint32_t key, struct Table *td)
 	static int bucketID[TABLE_SIZE];
 	uint32_t out;
 	MurmurHash3_x86_32((const void *)&key, sizeof(uint32_t), SEED, &out);					//calculate the hash value for each subtables,
+	int position = out % SUBTABLE_SIZE;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		if (td->subtables[i].buckets[out % SUBTABLE_SIZE].counter == 0) {
+		if (td->subtables[i].buckets[position].counter == 0) {
 			bucketID[i] = -1;
-			continue;
+		} else {
+			bucketID[i] = position;   		// Then divide hash value by subtable size
 		}
-		bucketID[i] = out % SUBTABLE_SIZE;   		// Then divide hash value by subtable size
 	}
 	return bucketID;
 }
@@ -146,7 +152,7 @@ bool delete(uint32_t key, struct Table *td)
 				td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i] = td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].fingerprint[i + 1];
 			}
 			td->subtables[bucketIndex].buckets[bucketList[bucketIndex]].counter -= 1;
-			printf("The key - %d is deleted successfully\n ", key);
+			printf("The key %d is deleted successfully\n ", key);
 			return true;
 		} else {
 			printf("[Error]: Key does not exists\n");
@@ -159,14 +165,25 @@ bool delete(uint32_t key, struct Table *td)
 	return false;
 }
 
+void init(struct Table *td) {
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		for (int j = 0; j < SUBTABLE_SIZE; j++) {
+			td->subtables[i].buckets[j].counter = 0;
+		}
+	}
+}
 
 int main(int argc, char const *argv[])
 {
 	struct Table T1;
+	init(&T1);
 	uint32_t key = 50;
-	bool output = inserting(key, &T1);
-	output = lookup(key, &T1);
-	output = delete(key, &T1);
-	printf("%d\n", output);
+	bool output;
+	for (int i = 0; i < 10; i++) {
+		output = inserting(i, &T1);
+	}
+	output = delete(5, &T1);
+	output = delete(1, &T1);
+	output = lookup(5, &T1);
 	return 0;
 }

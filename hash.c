@@ -165,25 +165,11 @@ bool delete(uint32_t key, struct Table *td)
 	return false;
 }
 
-void init(struct Table *td) {
+void init(struct Table *td) 
+{
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		for (int j = 0; j < SUBTABLE_SIZE; j++) {
 			td->subtables[i].buckets[j].counter = 0;
 		}
 	}
-}
-
-int main(int argc, char const *argv[])
-{
-	struct Table T1;
-	init(&T1);
-	uint32_t key = 50;
-	bool output;
-	for (int i = 0; i < 10; i++) {
-		output = inserting(i, &T1);
-	}
-	output = delete(5, &T1);
-	output = delete(1, &T1);
-	output = lookup(5, &T1);
-	return 0;
 }

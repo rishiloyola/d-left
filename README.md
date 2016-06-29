@@ -2,9 +2,9 @@
 
 ### Run
 ```
-gcc -o murmur3 murmur3.c
-gcc -o hash hash.c murmur3.o
-./hash
+gcc -c murmur3.c hash.c main.c
+gcc -o test murmur3.o hash.o main.o
+./test
 ```
 
 ### Dependency

@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
 ```
 
 ### Config
-Change the below parameter to generate the hash table of suitable size.
+Change the below parameters to generate the hash table of suitable size.
 ```c
 const int BUCKET_HEIGHT = 2;
 const int SUBTABLE_SIZE = 5;

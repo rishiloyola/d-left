@@ -1,4 +1,10 @@
 # d-left
+A d-left is a data structure designed to store data, rapidly, memory-efficiently and with very less collision probability compare to Bloom Filter. Check out this [experiment](https://www.eecs.harvard.edu/~michaelm/postscripts/aller2006.pdf) to increase the capacity and to reduce the false positive of Bloom Filter.
+
+### Advantages :
+* Separation of data and use of fingerprints allows checking of several locations per memory access.
+* Multiple hash functions significatly reduces collision probability.
+* Number of memory accesses rarely exceeds d+1.
 
 ### Run
 ```

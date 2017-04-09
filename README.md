@@ -9,7 +9,7 @@ A d-left is a data structure designed to store data, rapidly, memory-efficiently
 ### Run
 ```
 gcc -c murmur3.c hash.c main.c
-gcc -o test murmur3.o hash.o main.o
+gcc -o test main.o murmur3.o
 ./test
 ```
 
